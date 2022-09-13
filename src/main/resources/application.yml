@@ -1,7 +1,17 @@
 spring:
   application:
-    name: pr-lab1-consumer-local
+    name: ${APP_NAME:pr-lab1-consumer-dev}
 
 server:
-  address: 0.0.0.0
-  port: 8080
+  address: ${ADDRESS:0.0.0.0}
+  port: ${PORT:8088}
+
+producer:
+  address: ${PRODUCER_ADDRESS:localhost}
+  port: ${PRODUCER_PORT:8077}
+
+kitchen:
+  time:
+    unit: ${KITCHEN_TIME_UNIT:1}
+    duration: ${KITCHEN_TIME_DURATION:100}
+  cooks: ${COOKS_COUNT:4}

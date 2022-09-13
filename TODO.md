@@ -1,0 +1,12 @@
+## Consumer (Kitchen) for Network Programming Lab. 1
+- [] Repository
+- [] Readme
+- [] docker
+- [] Communication
+  - [] Receive orders
+  - [] Send ready orders 
+  - [] log sending and receiving
+- [] Prepare foods at kitchen
+  - [] Threads picking up the orders 
+  - [] Prepare orders 
+  - [] Send ready orders (No priority, cooking aparatus, or sharing orders )

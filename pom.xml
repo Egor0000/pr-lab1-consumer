@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>md.utm.isa.pr.lab1</groupId>
-	<artifactId>consumer</artifactId>
+	<artifactId>pr-lab1-consumer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>consumer</name>
 	<description>Consumer (Kitchen) for Network Programming Lab. 1 </description>
@@ -19,7 +19,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 
 		<dependency>
@@ -32,6 +32,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
