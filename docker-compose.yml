@@ -1,0 +1,9 @@
+services:
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PORT
+    ports:
+      - "${PORT}:${PORT}"
