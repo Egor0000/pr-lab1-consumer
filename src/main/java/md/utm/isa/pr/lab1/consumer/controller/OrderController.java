@@ -18,8 +18,9 @@ public class OrderController {
 
     @PostMapping("/")
     public String post(@RequestBody OrderDto order) {
-        log.info("Received order {}", order);
+        log.info("Received order {}. Timestamp: {}", order, System.currentTimeMillis() - order.getPickUpTime());
 
+        order.setReceiveTime(System.currentTimeMillis());
         kitchenService.postOrder(order);
 
         return String.format("Received new order {%s}", order.toString());

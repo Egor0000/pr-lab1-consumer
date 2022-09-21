@@ -14,4 +14,18 @@ kitchen:
   time:
     unit: ${KITCHEN_TIME_UNIT:1}
     duration: ${KITCHEN_TIME_DURATION:100}
-  cooks: ${COOKS_COUNT:2}
+  cooks:
+    count: ${COOKS_COUNT:2}
+  cooks_list:
+    - rank: 3
+      proeﬁciency: 4
+      name: "Cook 1"
+    - rank: 2
+      proeﬁciency: 3
+      name: "Cook 2"
+    - rank: 2
+      proeﬁciency: 2
+      name: "Cook 3"
+    - rank: 1
+      proeﬁciency: 2
+      name: "Cook 4"
