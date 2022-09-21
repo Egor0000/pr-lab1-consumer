@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class CookingDetailDto {
-    Long foodId;
-    Long cookId;
+    private Long foodId;
+    private Long cookId;
 }

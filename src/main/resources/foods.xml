@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<menu>
+    <food>
+        <id>1</id>
+        <name>pizza</name>
+        <preparation-time>20</preparation-time>
+        <complexity>2</complexity>
+        <cooking-aparatus>oven</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>2</id>
+        <name>salad</name>
+        <preparation-time>10</preparation-time>
+        <complexity>1</complexity>
+        <cooking-aparatus>null</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>3</id>
+        <name>zeama</name>
+        <preparation-time>7</preparation-time>
+        <complexity>1</complexity>
+        <cooking-aparatus>stove</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>4</id>
+        <name>Scallop Sashimi with Meyer Lemon Confit</name>
+        <preparation-time>32</preparation-time>
+        <complexity>3</complexity>
+        <cooking-aparatus>null</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>5</id>
+        <name>Island Duck with Mulberry Mustard</name>
+        <preparation-time>35</preparation-time>
+        <complexity>3</complexity>
+        <cooking-aparatus>oven</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>6</id>
+        <name>Waffles</name>
+        <preparation-time>10</preparation-time>
+        <complexity>1</complexity>
+        <cooking-aparatus>stove</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>7</id>
+        <name>Aubergine</name>
+        <preparation-time>20</preparation-time>
+        <complexity>2</complexity>
+        <cooking-aparatus>oven</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>8</id>
+        <name>Lasagna</name>
+        <preparation-time>30</preparation-time>
+        <complexity>2</complexity>
+        <cooking-aparatus>oven</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>9</id>
+        <name>Burger</name>
+        <preparation-time>15</preparation-time>
+        <complexity>1</complexity>
+        <cooking-aparatus>stove</cooking-aparatus>
+    </food>
+
+    <food>
+        <id>10</id>
+        <name>Gyros</name>
+        <preparation-time>15</preparation-time>
+        <complexity>1</complexity>
+        <cooking-aparatus></cooking-aparatus>
+    </food>
+
+    <food>
+        <id>11</id>
+        <name>Kebab</name>
+        <preparation-time>15</preparation-time>
+        <complexity>1</complexity>
+        <cooking-aparatus></cooking-aparatus>
+    </food>
+
+    <food>
+        <id>12</id>
+        <name>Unagi Maki</name>
+        <preparation-time>20</preparation-time>
+        <complexity>2</complexity>
+        <cooking-aparatus></cooking-aparatus>
+    </food>
+
+    <food>
+        <id>13</id>
+        <name>Tobacco Chicken</name>
+        <preparation-time>30</preparation-time>
+        <complexity>2</complexity>
+        <cooking-aparatus>oven</cooking-aparatus>
+    </food>
+</menu>

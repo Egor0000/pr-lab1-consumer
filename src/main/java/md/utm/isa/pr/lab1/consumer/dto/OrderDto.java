@@ -7,11 +7,14 @@ import java.util.List;
 
 @Data
 public class OrderDto {
-    Long orderId;
-    Long tableId;
-    Long waiterId;
-    List<Long> items;
-    Integer priority;
-    Long maxWait;
-    Timestamp pickUpTime;
+    private Long orderId;
+    private Long tableId;
+    private Long waiterId;
+    private List<Long> items;
+    private Integer priority;
+    private Double maxWait;
+    private Long pickUpTime;
+
+    //fixme only for debug
+    private Long receiveTime;
 }

@@ -7,13 +7,16 @@ import java.util.List;
 
 @Data
 public class PreparedOrderDto {
-    Long orderId;
-    Long tableId;
-    Long waiterId;
-    List<Long> items;
-    Integer priority;
-    Long maxWait;
-    Timestamp pickUpTime;
-    Long cookingTime;
-    List<CookingDetailDto> cookingDetails;
+    private Long orderId;
+    private Long tableId;
+    private Long waiterId;
+    private List<Long> items;
+    private Integer priority;
+    private Double maxWait;
+    private Long pickUpTime;
+    private Long cookingTime;
+    private List<CookingDetailDto> cookingDetails;
+
+    //fixme to delete as it is not in the doc
+    private Long sendTime;
 }
