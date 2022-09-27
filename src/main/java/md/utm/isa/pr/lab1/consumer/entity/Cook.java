@@ -6,12 +6,10 @@ import md.utm.isa.pr.lab1.consumer.dto.CookDto;
 import md.utm.isa.pr.lab1.consumer.dto.CookingDetailDto;
 import md.utm.isa.pr.lab1.consumer.dto.OrderDto;
 import md.utm.isa.pr.lab1.consumer.dto.PreparedOrderDto;
+import md.utm.isa.pr.lab1.consumer.enums.CookingApparatus;
 import md.utm.isa.pr.lab1.consumer.service.KitchenService;
 import md.utm.isa.pr.lab1.consumer.util.OrderUtil;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -24,11 +22,13 @@ public class Cook implements Runnable{
 
     private final long threadId;
 
+    private final Object ovenLock;
+    private final Object stoveLock;
+
     @Override
     public void run() {
         while (true) {
-            long start = System.currentTimeMillis();
-            OrderDto orderDto = new OrderDto();
+
             Food food = null;
 
             for (long l = cookDto.getRank(); l>=0; l--) {
@@ -44,7 +44,7 @@ public class Cook implements Runnable{
 //                Long end = System.currentTimeMillis();
 //                log.info("MaxWait: {}. Receive {} Start {} Timestamp:{}", orderDto.getMaxWait()*100, orderDto.getReceiveTime()-orderDto.getPickUpTime(), start-orderDto.getPickUpTime(), end-orderDto.getPickUpTime());
 //                kitchenService.postPreparedOrder(preparedOrder);
-
+                log.info("ADDED to oven");
                 prepareFood(food);
             }
             try {
@@ -87,9 +87,48 @@ public class Cook implements Runnable{
 
     private void prepareFood(Food food) {
         try {
-            Thread.sleep(food.getPreparationTime()*timeUnit*timeDuration);
+            if (food.getCookingApparatus() == null) {
+                Thread.sleep(food.getPreparationTime()*timeUnit*timeDuration);
+                kitchenService.addToPrepareQueue(food, cookDto.getCookId());
+                log.info("ADDED TO PREPARED FOOD WITH NULL APPARATUS" );
+            } else {
+                if (food.getCookingApparatus().equals(CookingApparatus.oven)) {
+                        kitchenService.addToUnpreparedQueue(food, cookDto.getCookId());
+                        log.debug("ADDED to oven");
 
-            kitchenService.addToPrepared(food, cookDto.getCookId());
+                } else {
+                        kitchenService.addToUnpreparedQueue(food, cookDto.getCookId());
+                        log.debug("ADDED to stove");
+                }
+            }
+
+//            if (food.getCookingApparatus() == null) {
+//                Thread.sleep(food.getPreparationTime()*timeUnit*timeDuration);
+//                kitchenService.addToPrepareQueue(food, cookDto.getCookId());
+//                log.info("ADDED TO PREPARED FOOD WITH NULL APPARATUS" );
+//            } else {
+//                if (food.getCookingApparatus().equals(CookingApparatus.oven)) {
+//                    synchronized (ovenLock) {
+//                        kitchenService.addToUnpreparedQueue(food, cookDto.getCookId());
+//                        log.debug("ADDED to oven");
+//                        ovenLock.notifyAll();
+//                    }
+//                } else {
+//                    synchronized (stoveLock) {
+//                        kitchenService.addToUnpreparedQueue(food, cookDto.getCookId());
+//                        log.debug("ADDED to stove");
+//                        stoveLock.notifyAll();
+//                    }
+//                }
+//            }
+
+            // without cooking apparatus, the time ration is 0.78
+//            if (true) {
+//                Thread.sleep(food.getPreparationTime()*timeUnit*timeDuration);
+//                kitchenService.addToPrepareQueue(food, cookDto.getCookId());
+//                log.info("ADDED TO PREPARED FOOD WITH NULL APPARATUS" );
+//            }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

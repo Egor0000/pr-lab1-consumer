@@ -16,6 +16,9 @@ kitchen:
     duration: ${KITCHEN_TIME_DURATION:100}
   cooks:
     count: ${COOKS_COUNT:4}
+  apparatus:
+    oven: ${OVENS_COUNT:4}
+    stove: ${STOVE_COUNT:4}
 
 cooksList:
   -
