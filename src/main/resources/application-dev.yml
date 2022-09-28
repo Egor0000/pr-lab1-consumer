@@ -16,6 +16,10 @@ kitchen:
     duration: ${KITCHEN_TIME_DURATION:100}
   cooks:
     count: ${COOKS_COUNT:2}
+  apparatus:
+    oven: ${OVENS_COUNT:2}
+    stove: ${STOVE_COUNT:1}
+
   cooks_list:
     - rank: 3
       proeﬁciency: 4

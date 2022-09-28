@@ -20,34 +20,4 @@ public class ApplicationProperties {
     public void setCooksList(List<CookDto> cooksList) {
         this.cooksList = cooksList;
     }
-
-    public static class CookProps {
-        private String rank;
-        private String proficiency;
-        private String name;
-
-        public String getRank() {
-            return rank;
-        }
-
-        public void setRank(String rank) {
-            this.rank = rank;
-        }
-
-        public String getProficiency() {
-            return proficiency;
-        }
-
-        public void setProficiency(String proficiency) {
-            this.proficiency = proficiency;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-    }
 }

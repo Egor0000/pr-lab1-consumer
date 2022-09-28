@@ -1,10 +1,9 @@
 package md.utm.isa.pr.lab1.consumer.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import md.utm.isa.pr.lab1.consumer.dto.OrderDto;
-import md.utm.isa.pr.lab1.consumer.dto.PreparedOrderDto;
-import md.utm.isa.pr.lab1.consumer.dto.TempOrder;
+import md.utm.isa.pr.lab1.consumer.dto.*;
 import md.utm.isa.pr.lab1.consumer.entity.Food;
+import md.utm.isa.pr.lab1.consumer.enums.CookingApparatus;
 import md.utm.isa.pr.lab1.consumer.service.KitchenService;
 import md.utm.isa.pr.lab1.consumer.util.MenuUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,10 +18,7 @@ import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.*;
 
 @Service
 @Slf4j
@@ -32,6 +28,10 @@ public class KitchenServiceImpl implements KitchenService {
     private ConcurrentMap<Long, TempOrder> workingList = new ConcurrentHashMap<>();
 
     private ConcurrentMap<Long, PriorityBlockingQueue<Food>> complexityQueues = new ConcurrentHashMap<>();
+
+    public ConcurrentMap<CookingApparatus, BlockingQueue<TempFood>> unpreparedFoodQueue = new ConcurrentHashMap<>();
+
+    public ConcurrentMap<Long, ConcurrentLinkedQueue<Food>> preparedFoodQueue = new ConcurrentHashMap<>();
 
     private Map<Long, Food> cachedMenu = new HashMap<>();
     @Value("${producer.address}")
@@ -61,6 +61,9 @@ public class KitchenServiceImpl implements KitchenService {
                     .build();
 
             cachedMenu = MenuUtil.cacheMenu();
+
+            unpreparedFoodQueue.put(CookingApparatus.oven, new LinkedBlockingQueue<>());
+            unpreparedFoodQueue.put(CookingApparatus.stove, new LinkedBlockingQueue<>());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -71,6 +74,8 @@ public class KitchenServiceImpl implements KitchenService {
         TempOrder tempOrder = new TempOrder();
         tempOrder.setOrderId(orderDto.getOrderId());
         tempOrder.setOrderDto(orderDto);
+
+        log.debug("PUT order {}", orderDto.getOrderId());
 
         workingList.put(orderDto.getOrderId(), tempOrder);
 
@@ -96,7 +101,7 @@ public class KitchenServiceImpl implements KitchenService {
     }
 
     @Override
-    public void addToPrepared(Food food, Long cookId) {
+    public void prepareFood(Food food, Long cookId) {
         TempOrder tempOrder = getTempOrder(food.getOrderId());
 
         if (tempOrder.prepareFood(food, cookId)) {
@@ -112,10 +117,36 @@ public class KitchenServiceImpl implements KitchenService {
             preparedOrderDto.setMaxWait(tempOrder.getOrderDto().getMaxWait());
             preparedOrderDto.setCookingDetails(tempOrder.getPreparedFoods());
 
+            log.info("REMOVED TEMP ORDER ID = {}", tempOrder.getOrderId());
+
             workingList.remove(tempOrder.getOrderId());
             postPreparedOrder(preparedOrderDto);
         }
     }
+
+    @Override
+    public void addToUnpreparedQueue(Food food, Long cookId) {
+
+        BlockingQueue<TempFood> foodByApparatus = unpreparedFoodQueue.get(food.getCookingApparatus());
+
+        if (foodByApparatus == null) {
+            unpreparedFoodQueue.put(food.getCookingApparatus(), new LinkedBlockingQueue<>());
+        }
+
+        unpreparedFoodQueue.get(food.getCookingApparatus()).add(new TempFood(food, cookId));
+    }
+
+    @Override
+    public TempFood getNextUnpreparedFood(CookingApparatus type) {
+        BlockingQueue<TempFood> foodByApparatus = unpreparedFoodQueue.get(type);
+
+        if (foodByApparatus != null) {
+            return unpreparedFoodQueue.get(type).poll();
+        }
+
+        return null;
+    }
+
 
     @Override
     public String postPreparedOrder(PreparedOrderDto preparedOrderDto) {
@@ -129,6 +160,26 @@ public class KitchenServiceImpl implements KitchenService {
                     .bodyToMono(String.class);
 
             return response.block();
+        }
+        return null;
+    }
+
+    @Override
+    public void addToPreparedQueue(Food food, Long cookId) {
+        ConcurrentLinkedQueue<Food> preparedFoodQueueByCook = preparedFoodQueue.get(cookId);
+
+        if (preparedFoodQueueByCook == null) {
+            preparedFoodQueue.put(cookId, new ConcurrentLinkedQueue<>());
+        }
+
+        preparedFoodQueue.get(cookId).add(food);
+    }
+
+    @Override
+    public Food takePreparedFood(Long cookId) {
+        ConcurrentLinkedQueue<Food> preparedFoodQueueByCook = preparedFoodQueue.get(cookId);
+        if (preparedFoodQueueByCook != null) {
+            return preparedFoodQueue.get(cookId).poll();
         }
         return null;
     }

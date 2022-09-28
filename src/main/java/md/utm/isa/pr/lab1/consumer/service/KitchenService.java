@@ -2,8 +2,10 @@ package md.utm.isa.pr.lab1.consumer.service;
 
 import md.utm.isa.pr.lab1.consumer.dto.OrderDto;
 import md.utm.isa.pr.lab1.consumer.dto.PreparedOrderDto;
+import md.utm.isa.pr.lab1.consumer.dto.TempFood;
 import md.utm.isa.pr.lab1.consumer.dto.TempOrder;
 import md.utm.isa.pr.lab1.consumer.entity.Food;
+import md.utm.isa.pr.lab1.consumer.enums.CookingApparatus;
 
 public interface KitchenService {
     void postOrder(OrderDto orderDto);
@@ -14,7 +16,15 @@ public interface KitchenService {
 
     Food getNextFoodByComplexity(Long id);
 
-    void addToPrepared(Food food, Long cookId);
+    void prepareFood(Food food, Long cookId);
+
+    void addToUnpreparedQueue(Food food, Long cookId);
+
+    TempFood getNextUnpreparedFood(CookingApparatus cookingApparatus);
 
     String postPreparedOrder(PreparedOrderDto preparedOrderDto);
+
+    void addToPreparedQueue(Food food, Long cookId);
+
+    Food takePreparedFood(Long cookId);
 }
