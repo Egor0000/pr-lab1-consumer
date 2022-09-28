@@ -16,11 +16,15 @@ public interface KitchenService {
 
     Food getNextFoodByComplexity(Long id);
 
-    void addToPrepareQueue(Food food, Long cookId);
+    void prepareFood(Food food, Long cookId);
 
     void addToUnpreparedQueue(Food food, Long cookId);
 
     TempFood getNextUnpreparedFood(CookingApparatus cookingApparatus);
 
     String postPreparedOrder(PreparedOrderDto preparedOrderDto);
+
+    void addToPreparedQueue(Food food, Long cookId);
+
+    Food takePreparedFood(Long cookId);
 }

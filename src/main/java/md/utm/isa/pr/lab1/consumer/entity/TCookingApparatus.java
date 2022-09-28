@@ -34,24 +34,6 @@ public class TCookingApparatus implements Runnable {
             }
 
         }
-//        while (true) {
-//            synchronized (lock) {
-//                try {
-//                    lock.wait();
-//
-//                TempFood tempFood = kitchenService.getNextUnpreparedFood(type);
-//
-//                if (tempFood != null) {
-//                    prepareFood(tempFood);
-//                }
-//
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                } finally {
-//                    lock.notifyAll();
-//                }
-//            }
-//        }
     }
 
     private void prepareFood(TempFood unpreparedFood) {
@@ -60,7 +42,7 @@ public class TCookingApparatus implements Runnable {
             Thread.sleep(unpreparedFood.getFood().getPreparationTime()*timeUnit*timeDuration);
 
 
-            kitchenService.addToPrepareQueue(unpreparedFood.getFood(), unpreparedFood.getCookId());
+            kitchenService.prepareFood(unpreparedFood.getFood(), unpreparedFood.getCookId());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

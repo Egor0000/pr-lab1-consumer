@@ -17,8 +17,8 @@ kitchen:
   cooks:
     count: ${COOKS_COUNT:4}
   apparatus:
-    oven: ${OVENS_COUNT:4}
-    stove: ${STOVE_COUNT:4}
+    oven: ${OVENS_COUNT:2}
+    stove: ${STOVE_COUNT:1}
 
 cooksList:
   -

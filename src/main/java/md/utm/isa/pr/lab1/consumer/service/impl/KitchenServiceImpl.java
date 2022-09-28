@@ -31,6 +31,8 @@ public class KitchenServiceImpl implements KitchenService {
 
     public ConcurrentMap<CookingApparatus, BlockingQueue<TempFood>> unpreparedFoodQueue = new ConcurrentHashMap<>();
 
+    public ConcurrentMap<Long, ConcurrentLinkedQueue<Food>> preparedFoodQueue = new ConcurrentHashMap<>();
+
     private Map<Long, Food> cachedMenu = new HashMap<>();
     @Value("${producer.address}")
     private String address;
@@ -99,7 +101,7 @@ public class KitchenServiceImpl implements KitchenService {
     }
 
     @Override
-    public void addToPrepareQueue(Food food, Long cookId) {
+    public void prepareFood(Food food, Long cookId) {
         TempOrder tempOrder = getTempOrder(food.getOrderId());
 
         if (tempOrder.prepareFood(food, cookId)) {
@@ -158,6 +160,26 @@ public class KitchenServiceImpl implements KitchenService {
                     .bodyToMono(String.class);
 
             return response.block();
+        }
+        return null;
+    }
+
+    @Override
+    public void addToPreparedQueue(Food food, Long cookId) {
+        ConcurrentLinkedQueue<Food> preparedFoodQueueByCook = preparedFoodQueue.get(cookId);
+
+        if (preparedFoodQueueByCook == null) {
+            preparedFoodQueue.put(cookId, new ConcurrentLinkedQueue<>());
+        }
+
+        preparedFoodQueue.get(cookId).add(food);
+    }
+
+    @Override
+    public Food takePreparedFood(Long cookId) {
+        ConcurrentLinkedQueue<Food> preparedFoodQueueByCook = preparedFoodQueue.get(cookId);
+        if (preparedFoodQueueByCook != null) {
+            return preparedFoodQueue.get(cookId).poll();
         }
         return null;
     }
