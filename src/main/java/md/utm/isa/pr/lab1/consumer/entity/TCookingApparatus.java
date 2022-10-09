@@ -20,9 +20,10 @@ public class TCookingApparatus implements Runnable {
     public void run() {
         while (true) {
 
-                TempFood tempFood = kitchenService.getNextUnpreparedFood(type);
+            TempFood tempFood = kitchenService.getNextUnpreparedFood(type);
 
-                if (tempFood!=null) {
+
+            if (tempFood!=null) {
                     log.debug("[{}]READ food {} from queue", type, tempFood.getFood().getId());
                     prepareFood(tempFood);
                 }
@@ -38,11 +39,16 @@ public class TCookingApparatus implements Runnable {
 
     private void prepareFood(TempFood unpreparedFood) {
         try {
-            log.error("{}", unpreparedFood.getFood().getPreparationTime()*timeUnit*timeDuration);
-            Thread.sleep(unpreparedFood.getFood().getPreparationTime()*timeUnit*timeDuration);
+            Thread.sleep(1*timeUnit*timeDuration);
+            if (unpreparedFood.getFood().getPreparationTime()>0) {
+                unpreparedFood.getFood().setPreparationTime(unpreparedFood.getFood().getPreparationTime()-1);
+            }
 
-
-            kitchenService.prepareFood(unpreparedFood.getFood(), unpreparedFood.getCookId());
+            if (unpreparedFood.getFood().getPreparationTime() <= 0) {
+                kitchenService.prepareFood(unpreparedFood.getFood(), unpreparedFood.getCookId());
+            } else  {
+                kitchenService.addToUnpreparedQueue(unpreparedFood);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
