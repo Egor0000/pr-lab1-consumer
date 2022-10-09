@@ -137,6 +137,17 @@ public class KitchenServiceImpl implements KitchenService {
     }
 
     @Override
+    public void addToUnpreparedQueue(TempFood tempFood) {
+        BlockingQueue<TempFood> foodByApparatus = unpreparedFoodQueue.get(tempFood.getFood().getCookingApparatus());
+
+        if (foodByApparatus == null) {
+            unpreparedFoodQueue.put(tempFood.getFood().getCookingApparatus(), new LinkedBlockingQueue<>());
+        }
+
+        unpreparedFoodQueue.get(tempFood.getFood().getCookingApparatus()).add(tempFood);
+    }
+
+    @Override
     public TempFood getNextUnpreparedFood(CookingApparatus type) {
         BlockingQueue<TempFood> foodByApparatus = unpreparedFoodQueue.get(type);
 

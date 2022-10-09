@@ -20,6 +20,8 @@ public interface KitchenService {
 
     void addToUnpreparedQueue(Food food, Long cookId);
 
+    void addToUnpreparedQueue(TempFood tempFood);
+
     TempFood getNextUnpreparedFood(CookingApparatus cookingApparatus);
 
     String postPreparedOrder(PreparedOrderDto preparedOrderDto);
