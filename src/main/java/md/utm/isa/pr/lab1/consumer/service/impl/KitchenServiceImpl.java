@@ -40,9 +40,24 @@ public class KitchenServiceImpl implements KitchenService {
     @Value("${producer.port}")
     private Integer port;
 
+    @Value("${server.address}")
+    private String serverAddress;
+
+    @Value("${server.port}")
+    private Integer serverPort;
+
     private String path = "/distribution/";
 
     private WebClient webClient;
+
+    @Value("${food-ordering.address}")
+    private String foodOrderingAddress;
+
+    @Value("${food-ordering.port}")
+    private Integer foodOrderingPort;
+
+    @Value("${server.id}")
+    private Long restaurantId;
 
     public KitchenServiceImpl() {
 
@@ -64,6 +79,8 @@ public class KitchenServiceImpl implements KitchenService {
 
             unpreparedFoodQueue.put(CookingApparatus.oven, new LinkedBlockingQueue<>());
             unpreparedFoodQueue.put(CookingApparatus.stove, new LinkedBlockingQueue<>());
+
+            register();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -193,6 +210,35 @@ public class KitchenServiceImpl implements KitchenService {
             return preparedFoodQueue.get(cookId).poll();
         }
         return null;
+    }
+
+    @Override
+    public void register() {
+        try {
+            Thread.sleep(100);
+
+            List<Food> foods = MenuUtil.getMenu();
+            RestaurantDto restaurantDto = new RestaurantDto();
+            restaurantDto.setRestaurantId(restaurantId);
+            restaurantDto.setName("Restaurant_"+restaurantId);
+            restaurantDto.setAddress(String.format("%s:%s", serverAddress, serverPort));
+            restaurantDto.setMenu(foods);
+            restaurantDto.setMenuItems((long)foods.size());
+
+            log.info("Registering the restaurant ... ");
+
+            WebClient foodOrderingClient = WebClient.create(String.format("http://%s:%s", foodOrderingAddress, foodOrderingPort));
+
+             foodOrderingClient.post()
+                    .uri(String.format("%s:%s%s", foodOrderingAddress, foodOrderingPort, "/register/"))
+                    .body(BodyInserters.fromValue(restaurantDto))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class).subscribe(resp -> log.info("Response: {}", resp));
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
     }
 
     private void distributeOrder(OrderDto orderDto) {

@@ -29,4 +29,6 @@ public interface KitchenService {
     void addToPreparedQueue(Food food, Long cookId);
 
     Food takePreparedFood(Long cookId);
+
+    void register();
 }

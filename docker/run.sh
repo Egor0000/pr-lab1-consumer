@@ -7,6 +7,9 @@ export PORT=8085
 export PRODUCER_PORT=8075
 export APP_NAME=consumer-dev
 export ADDRESS=localhost
+export ORDERING_ADDRESS=localhost
+export ORDERING_PORT=8002
+export RESTAURANT_ID=0
 
 function noArgumentSupplied() {
 
@@ -41,6 +44,7 @@ export LAB1_CONSUMER_INSTANCE_NAME=${args[0]}
 
 echo "  LAB1_CONSUMER instance name: ${LAB1_CONSUMER_INSTANCE_NAME}"
 echo "  LAB1_CONSUMER profile: ${LAB1_CONSUMER_PROFILE}"
+echo "  Restaurant ID: ${RESTAURANT_ID}"
 echo ""
 echo "========================================================================="
 echo ""
@@ -51,7 +55,10 @@ docker run -it --name ${LAB1_CONSUMER_INSTANCE_NAME} --net host --log-driver non
 -e SPRING_PROFILES_ACTIVE=${LAB1_CONSUMER_PROFILE} \
 -e ADDRESS=${ADDRESS} \
 -e PORT=${PORT} \
+-e ORDERING_ADDRESS=${ORDERING_ADDRESS} \
+-e ORDERING_PORT=${ORDERING_PORT} \
 -e PRODUCER_PORT=${PRODUCER_PORT} \
+-e RESTAURANT_ID=${RESTAURANT_ID} \
 -e APP_NAME=${APP_NAME} \
 -e JAVA_OPTS="${JAVA_OPTS}" \
 --rm ${LAB1_CONSUMER_VERSION}

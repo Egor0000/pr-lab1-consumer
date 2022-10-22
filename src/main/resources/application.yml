@@ -3,8 +3,9 @@ spring:
     name: ${APP_NAME:pr-lab1-consumer-dev}
 
 server:
-  address: ${ADDRESS:0.0.0.0}
+  address: ${ADDRESS:localhost}
   port: ${PORT:8088}
+  id: ${RESTAURANT_ID:0}
 
 producer:
   address: ${PRODUCER_ADDRESS:localhost}
@@ -37,3 +38,7 @@ cooksList:
     rank: 1
     proficiency: 2
     name: "Cook 4"
+
+food-ordering:
+  address: ${ORDERING_ADDRESS:localhost}
+  port: ${ORDERING_PORT:8002}
