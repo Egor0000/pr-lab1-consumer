@@ -3,6 +3,8 @@ package md.utm.isa.pr.lab1.consumer.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import md.utm.isa.pr.lab1.consumer.dto.OrderDto;
+import md.utm.isa.pr.lab1.consumer.dto.ResponseOrderDto;
+import md.utm.isa.pr.lab1.consumer.service.KitchenService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,12 +15,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 public class ClientOrderController {
-    @PostMapping("/order")
-    public String post(@RequestBody OrderDto order) {
+    private final KitchenService kitchenService;
+
+    @PostMapping(value = "/order", consumes="application/json")
+    public ResponseOrderDto post(@RequestBody OrderDto order) {
+        order.setExternal(true);
         log.info("Received order {}. Timestamp: {}", order, System.currentTimeMillis() - order.getPickUpTime());
 
-        order.setReceiveTime(System.currentTimeMillis());
+        kitchenService.postOrder(order);
 
-        return String.format("Received new order {%s}", order.toString());
+        ResponseOrderDto responseOrderDto = new ResponseOrderDto();
+        responseOrderDto.setOrderId(order.getOrderId());
+        responseOrderDto.setRestaurantId(order.getRestaurantId());
+        responseOrderDto.setCreatedTime(order.getPickUpTime());
+        responseOrderDto.setRegisteredTime(System.currentTimeMillis());
+
+        return responseOrderDto;
     }
 }

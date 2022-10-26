@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 public class KitchenServiceImpl implements KitchenService {
     private ConcurrentLinkedQueue<OrderDto> orderList = new ConcurrentLinkedQueue<>();
 
-    private ConcurrentMap<Long, TempOrder> workingList = new ConcurrentHashMap<>();
+    private ConcurrentMap<Key, TempOrder> workingList = new ConcurrentHashMap<>();
 
     private ConcurrentMap<Long, PriorityBlockingQueue<Food>> complexityQueues = new ConcurrentHashMap<>();
 
@@ -40,9 +40,24 @@ public class KitchenServiceImpl implements KitchenService {
     @Value("${producer.port}")
     private Integer port;
 
+    @Value("${server.address}")
+    private String serverAddress;
+
+    @Value("${server.port}")
+    private Integer serverPort;
+
     private String path = "/distribution/";
 
     private WebClient webClient;
+
+    @Value("${food-ordering.address}")
+    private String foodOrderingAddress;
+
+    @Value("${food-ordering.port}")
+    private Integer foodOrderingPort;
+
+    @Value("${server.id}")
+    private Long restaurantId;
 
     public KitchenServiceImpl() {
 
@@ -64,6 +79,8 @@ public class KitchenServiceImpl implements KitchenService {
 
             unpreparedFoodQueue.put(CookingApparatus.oven, new LinkedBlockingQueue<>());
             unpreparedFoodQueue.put(CookingApparatus.stove, new LinkedBlockingQueue<>());
+
+            register();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -74,10 +91,11 @@ public class KitchenServiceImpl implements KitchenService {
         TempOrder tempOrder = new TempOrder();
         tempOrder.setOrderId(orderDto.getOrderId());
         tempOrder.setOrderDto(orderDto);
+        tempOrder.setExternal(orderDto.isExternal());
 
         log.debug("PUT order {}", orderDto.getOrderId());
 
-        workingList.put(orderDto.getOrderId(), tempOrder);
+        workingList.put(new Key(orderDto.getOrderId(), orderDto.isExternal()), tempOrder);
 
         distributeOrder(orderDto);
     }
@@ -90,8 +108,8 @@ public class KitchenServiceImpl implements KitchenService {
     }
 
     @Override
-    public TempOrder getTempOrder(Long id) {
-        return workingList.get(id);
+    public TempOrder getTempOrder(Key key) {
+        return workingList.get(key);
     }
 
     @Override
@@ -102,7 +120,7 @@ public class KitchenServiceImpl implements KitchenService {
 
     @Override
     public void prepareFood(Food food, Long cookId) {
-        TempOrder tempOrder = getTempOrder(food.getOrderId());
+        TempOrder tempOrder = getTempOrder(new Key(food.getOrderId(), food.isExternal()));
 
         if (tempOrder.prepareFood(food, cookId)) {
             PreparedOrderDto preparedOrderDto = new PreparedOrderDto();
@@ -116,10 +134,11 @@ public class KitchenServiceImpl implements KitchenService {
             preparedOrderDto.setPickUpTime(tempOrder.getOrderDto().getPickUpTime());
             preparedOrderDto.setMaxWait(tempOrder.getOrderDto().getMaxWait());
             preparedOrderDto.setCookingDetails(tempOrder.getPreparedFoods());
+            preparedOrderDto.setExternal(tempOrder.isExternal());
 
             log.info("REMOVED TEMP ORDER ID = {}", tempOrder.getOrderId());
 
-            workingList.remove(tempOrder.getOrderId());
+            workingList.remove(new Key(tempOrder.getOrderId(), tempOrder.isExternal()));
             postPreparedOrder(preparedOrderDto);
         }
     }
@@ -158,19 +177,22 @@ public class KitchenServiceImpl implements KitchenService {
         return null;
     }
 
-
     @Override
     public String postPreparedOrder(PreparedOrderDto preparedOrderDto) {
         if (webClient != null) {
             log.info("Send prepared order {}", preparedOrderDto);
-            Mono<String> response = webClient.post()
-                    .uri(String.format("%s:%s%s", address, port, path))
-                    .body(BodyInserters.fromValue(preparedOrderDto))
-                    .accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .bodyToMono(String.class);
+            if (!preparedOrderDto.isExternal()) {
+                Mono<String> response = webClient.post()
+                        .uri(String.format("%s:%s%s", address, port, path))
+                        .body(BodyInserters.fromValue(preparedOrderDto))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .bodyToMono(String.class);
 
-            return response.block();
+                return response.block();
+            } else {
+                log.info("Send prepared food to order service");
+            }
         }
         return null;
     }
@@ -195,11 +217,41 @@ public class KitchenServiceImpl implements KitchenService {
         return null;
     }
 
+    @Override
+    public void register() {
+        try {
+            Thread.sleep(100);
+
+            List<Food> foods = MenuUtil.getMenu();
+            RestaurantDto restaurantDto = new RestaurantDto();
+            restaurantDto.setRestaurantId(restaurantId);
+            restaurantDto.setName("Restaurant_"+restaurantId);
+            restaurantDto.setAddress(String.format("%s:%s", serverAddress, serverPort));
+            restaurantDto.setMenu(foods);
+            restaurantDto.setMenuItems((long)foods.size());
+
+            log.info("Registering the restaurant ... ");
+
+            WebClient foodOrderingClient = WebClient.create(String.format("http://%s:%s", foodOrderingAddress, foodOrderingPort));
+
+             foodOrderingClient.post()
+                    .uri(String.format("%s:%s%s", foodOrderingAddress, foodOrderingPort, "/register/"))
+                    .body(BodyInserters.fromValue(restaurantDto))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class).subscribe(resp -> log.info("Response: {}", resp));
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
+    }
+
     private void distributeOrder(OrderDto orderDto) {
         for (int i = 0; i < orderDto.getItems().size(); i++) {
             Food food = cachedMenu.get(orderDto.getItems().get(i));
             Food clonedFood = food.clone();
             clonedFood.setOrderId(orderDto.getOrderId());
+            clonedFood.setExternal(orderDto.isExternal());
 
             if (!complexityQueues.containsKey(clonedFood.getComplexity())) {
                 complexityQueues.put(clonedFood.getComplexity(), new PriorityBlockingQueue<>(100, new FoodComparator()));

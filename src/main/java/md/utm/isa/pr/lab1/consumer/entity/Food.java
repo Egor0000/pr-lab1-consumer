@@ -11,6 +11,7 @@ public class Food implements Cloneable{
     private Long preparationTime;
     private Long complexity;
     private CookingApparatus cookingApparatus;
+    private boolean external;
 
     @Override
     public Food clone() {

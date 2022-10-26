@@ -4,7 +4,7 @@ spring:
 
 server:
   address: ${ADDRESS:0.0.0.0}
-  port: ${PORT:8080}
+  port: ${PORT:8088}
 
 producer:
   address: ${PRODUCER_ADDRESS:http://localhost}

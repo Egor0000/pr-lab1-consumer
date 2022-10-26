@@ -16,6 +16,7 @@ public class PreparedOrderDto {
     private Long pickUpTime;
     private Long cookingTime;
     private List<CookingDetailDto> cookingDetails;
+    private boolean isExternal;
 
     //fixme to delete as it is not in the doc
     private Long sendTime;
