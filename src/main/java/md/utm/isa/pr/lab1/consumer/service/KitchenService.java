@@ -1,9 +1,6 @@
 package md.utm.isa.pr.lab1.consumer.service;
 
-import md.utm.isa.pr.lab1.consumer.dto.OrderDto;
-import md.utm.isa.pr.lab1.consumer.dto.PreparedOrderDto;
-import md.utm.isa.pr.lab1.consumer.dto.TempFood;
-import md.utm.isa.pr.lab1.consumer.dto.TempOrder;
+import md.utm.isa.pr.lab1.consumer.dto.*;
 import md.utm.isa.pr.lab1.consumer.entity.Food;
 import md.utm.isa.pr.lab1.consumer.enums.CookingApparatus;
 
@@ -12,7 +9,7 @@ public interface KitchenService {
 
     TempOrder getNextOrder();
 
-    TempOrder getTempOrder(Long id);
+    TempOrder getTempOrder(Key key);
 
     Food getNextFoodByComplexity(Long id);
 

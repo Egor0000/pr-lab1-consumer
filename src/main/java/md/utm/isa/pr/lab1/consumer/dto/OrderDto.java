@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 public class OrderDto {
     private Long orderId;
+    private Long restaurantId;
     private Long tableId;
     private Long waiterId;
     private List<Long> items;
@@ -16,6 +17,7 @@ public class OrderDto {
     private Double maxWait;
     @JsonAlias({ "createdTime" })
     private Long pickUpTime;
+    private boolean external;
 
     //fixme only for debug
     private Long receiveTime;

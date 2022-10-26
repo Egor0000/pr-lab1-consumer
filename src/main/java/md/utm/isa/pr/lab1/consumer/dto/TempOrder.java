@@ -10,6 +10,7 @@ import java.util.List;
 public class TempOrder {
     private Long orderId;
     private OrderDto orderDto;
+    private boolean external;
     private List<CookingDetailDto> preparedFoods = new ArrayList<>();
 
     /**
