@@ -1,8 +1,10 @@
 package md.utm.isa.pr.lab1.consumer.util;
 
+import lombok.RequiredArgsConstructor;
 import md.utm.isa.pr.lab1.consumer.dto.OrderDto;
 import md.utm.isa.pr.lab1.consumer.dto.PreparedOrderDto;
 
+@RequiredArgsConstructor
 public class OrderUtil {
     public static PreparedOrderDto mapOrderToPreparedOrder(OrderDto orderDto) {
         PreparedOrderDto preparedOrder = new PreparedOrderDto();

@@ -22,7 +22,7 @@ public class MenuUtil {
         return cachedMenu;
     }
 
-    public static List<Food> getMenu() {
+    private static List<Food> getMenu() {
         try {
             List<Food> foods = new ArrayList<>();
 

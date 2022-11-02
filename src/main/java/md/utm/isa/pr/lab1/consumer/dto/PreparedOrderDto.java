@@ -17,6 +17,8 @@ public class PreparedOrderDto {
     private Long cookingTime;
     private List<CookingDetailDto> cookingDetails;
     private boolean isExternal;
+    private int rating;
+    private long restaurantId;
 
     //fixme to delete as it is not in the doc
     private Long sendTime;

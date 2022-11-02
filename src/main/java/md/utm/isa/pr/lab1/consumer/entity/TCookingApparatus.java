@@ -24,7 +24,7 @@ public class TCookingApparatus implements Runnable {
 
 
             if (tempFood!=null) {
-                    log.debug("[{}]READ food {} from queue", type, tempFood.getFood().getId());
+                    log.info("[{}]READ food {} from queue", type, tempFood.getFood());
                     prepareFood(tempFood);
                 }
 

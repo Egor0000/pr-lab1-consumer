@@ -1,5 +1,6 @@
 package md.utm.isa.pr.lab1.consumer.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import md.utm.isa.pr.lab1.consumer.dto.*;
 import md.utm.isa.pr.lab1.consumer.entity.Food;
@@ -19,13 +20,21 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class KitchenServiceImpl implements KitchenService {
+    private final ApplicationProperties applicationProperties;
+
     private ConcurrentLinkedQueue<OrderDto> orderList = new ConcurrentLinkedQueue<>();
+    private List<Double> ratings = new CopyOnWriteArrayList<>();
+    private List<Integer> stars = new ArrayList<>();
 
     private ConcurrentMap<Key, TempOrder> workingList = new ConcurrentHashMap<>();
+
+    private ConcurrentMap<Long, PreparedOrderDto> preparedExternalOrders = new ConcurrentHashMap<>();
 
     private ConcurrentMap<Long, PriorityBlockingQueue<Food>> complexityQueues = new ConcurrentHashMap<>();
 
@@ -59,10 +68,11 @@ public class KitchenServiceImpl implements KitchenService {
     @Value("${server.id}")
     private Long restaurantId;
 
-    public KitchenServiceImpl() {
+    @Value("${kitchen.apparatus.oven}")
+    private Long ovenCount;
 
-    }
-
+    @Value("${kitchen.apparatus.stove}")
+    private Long stoveCount;
 
     @PostConstruct
     private void onInit() {
@@ -93,7 +103,8 @@ public class KitchenServiceImpl implements KitchenService {
         tempOrder.setOrderDto(orderDto);
         tempOrder.setExternal(orderDto.isExternal());
 
-        log.debug("PUT order {}", orderDto.getOrderId());
+
+        log.info("PUT order {}", orderDto.getOrderId());
 
         workingList.put(new Key(orderDto.getOrderId(), orderDto.isExternal()), tempOrder);
 
@@ -121,6 +132,8 @@ public class KitchenServiceImpl implements KitchenService {
     @Override
     public void prepareFood(Food food, Long cookId) {
         TempOrder tempOrder = getTempOrder(new Key(food.getOrderId(), food.isExternal()));
+
+        log.info("Prepared food {}", food);
 
         if (tempOrder.prepareFood(food, cookId)) {
             PreparedOrderDto preparedOrderDto = new PreparedOrderDto();
@@ -191,7 +204,7 @@ public class KitchenServiceImpl implements KitchenService {
 
                 return response.block();
             } else {
-                log.info("Send prepared food to order service");
+                preparedExternalOrders.put(preparedOrderDto.getOrderId(), preparedOrderDto);
             }
         }
         return null;
@@ -222,7 +235,7 @@ public class KitchenServiceImpl implements KitchenService {
         try {
             Thread.sleep(100);
 
-            List<Food> foods = MenuUtil.getMenu();
+            List<Food> foods = new ArrayList<>(MenuUtil.cacheMenu().values());
             RestaurantDto restaurantDto = new RestaurantDto();
             restaurantDto.setRestaurantId(restaurantId);
             restaurantDto.setName("Restaurant_"+restaurantId);
@@ -244,6 +257,59 @@ public class KitchenServiceImpl implements KitchenService {
             throw new RuntimeException(ex);
         }
 
+    }
+
+    public double getEstimatedTime(OrderDto order) {
+        Map<Long, Food> menu = MenuUtil.cacheMenu();
+
+        long noApparatusTime = order.getItems().stream()
+                .map(menu::get)
+                .filter(food -> food.getCookingApparatus() == null)
+                .map(Food::getPreparationTime)
+                .mapToLong(Long::longValue)
+                .sum();
+
+        List<CookDto> cookDtoList = applicationProperties.getCooksList();
+        int cookProef = cookDtoList.stream()
+                .map(CookDto::getProficiency)
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        long apparatusTime = order.getItems().stream()
+                .map(menu::get)
+                .filter(food -> food.getCookingApparatus() != null)
+                .map(Food::getPreparationTime)
+                .mapToLong(Long::longValue)
+                .sum();
+
+        long apparatusCount = ovenCount + stoveCount;
+
+        int waitingTime = unpreparedFoodQueue.values().stream()
+                .map(Collection::size)
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        int currentFoods = order.getItems().size();
+        return (noApparatusTime / (double)cookProef + apparatusTime / (double)apparatusCount)
+                * (waitingTime + currentFoods) / currentFoods;
+    }
+
+    @Override
+    public PreparedOrderDto getPreparedExternalOrder(Long id) {
+        PreparedOrderDto preparedOrderDto = preparedExternalOrders.remove(id);
+        log.info ("Client requested order {}. STATUS: {} ", id, preparedOrderDto);
+        return preparedOrderDto;
+    }
+
+    @Override
+    public ResponseRating getAverageRating(PreparedOrderDto preparedOrderDto) {
+        stars.add(preparedOrderDto.getRating());
+        ResponseRating responseRating = new ResponseRating();
+        responseRating.setRestaurantId(preparedOrderDto.getRestaurantId());
+        responseRating.setPreparedOrders((long) stars.size());
+        Double avg = stars.stream().mapToDouble(Integer::doubleValue).average().orElse(Double.NaN);
+        responseRating.setRestaurantAverageRating(avg);
+        return responseRating;
     }
 
     private void distributeOrder(OrderDto orderDto) {
