@@ -28,4 +28,10 @@ public interface KitchenService {
     Food takePreparedFood(Long cookId);
 
     void register();
+
+    double getEstimatedTime(OrderDto order);
+
+    PreparedOrderDto getPreparedExternalOrder(Long id);
+
+    ResponseRating getAverageRating(PreparedOrderDto preparedOrderDto);
 }
